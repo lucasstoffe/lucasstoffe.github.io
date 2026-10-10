@@ -21,7 +21,9 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Doto:wght@800&family=Instrument+Sans:wght@400;500;600&family=Syne+Mono&display=swap" rel="stylesheet">
+  <!-- Fonts load without holding the page back: on a slow connection the text shows at once in a system font, then switches. -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Syne+Mono&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Syne+Mono&display=swap"></noscript>
   <link rel="stylesheet" href="style.css">
   <script>document.documentElement.classList.add('js');</script>
 </head>
@@ -133,8 +135,8 @@
         </div>
       </div>
       <div class="phones reveal">
-        <figure class="shot shot--phone"><img src="images/work/chatbox-01.jpg" alt="Running coach: a conversation about changing the day's training" width="900" height="1740" loading="lazy"></figure>
-        <figure class="shot shot--phone"><img src="images/work/chatbox-02.jpg" alt="Running coach: feedback after a tempo session" width="900" height="1740" loading="lazy"></figure>
+        <figure class="phone"><div class="shot shot--phone"><img src="images/work/chatbox-01.jpg" alt="Running coach: a conversation about changing the day's training" width="900" height="1740" loading="lazy"></div><figcaption><span>01</span> You tell it your week changed. It rebuilds the plan.</figcaption></figure>
+        <figure class="phone"><div class="shot shot--phone"><img src="images/work/chatbox-02.jpg" alt="Running coach: feedback after a tempo session" width="900" height="1740" loading="lazy"></div><figcaption><span>02</span> After a session it reads the data and tells you how it went.</figcaption></figure>
       </div>
     </article>
 
@@ -256,6 +258,7 @@
       <h2 class="s-name">ABOUT</h2>
     </header>
     <div class="about-grid">
+      <figure class="portrait reveal"><img src="images/lucas.jpg" alt="Lucas Stoffe" width="900" height="900" loading="lazy"></figure>
       <div class="about-text reveal">
         <p class="about-lead">Designer first. Builder since I found out I could make the whole thing myself.</p>
         <p>I studied Idea and Innovation Management, worked in trend research at Trendwatching and come from graphic design. After two years in Bangkok I'm back in Brussels, where I run a lot and work for myself.</p>

@@ -25,17 +25,24 @@
   --pad:     clamp(1.5rem, 5vw, 4.5rem);
   --section: clamp(4.5rem, 10vw, 9rem);
 
-  --font-display: 'Instrument Sans', sans-serif;   /* running text */
-  --font-mono:    'Syne Mono', monospace;          /* labels and small text */
-  --font-title:   'Doto', monospace;               /* titles */
+  --font-display: 'Instrument Sans', -apple-system, 'Helvetica Neue', Arial, sans-serif;   /* running text */
+  --font-mono:    'Syne Mono', ui-monospace, Menlo, monospace;   /* labels and small text */
+  --font-title:   'Syne Mono', ui-monospace, Menlo, monospace;   /* titles */
 
   /* Title settings, shared by every title on the page */
-  --title-weight: 800;
-  --title-track:  -0.07em;
+  --title-weight: 400;
+  --title-track:  -0.045em;
   --title-case:   none;
-  --title-scale:  0.74;
-  --title-lh:     1.08;
+  --title-lh:     1.1;
   --label-track:  0.14em;
+
+  /* Title sizes. A monospaced face runs wide, so the long opening and
+     closing lines are set a little smaller than the short titles. */
+  --ts-long:  0.78;   /* opening line, closing line */
+  --ts-case:  0.9;    /* main project titles */
+  --ts-short: 0.92;   /* small project titles, services */
+  --ts-lead:  0.8;    /* About lead */
+  --title-scale: var(--ts-long);
 }
 
 /* ================================================
@@ -549,6 +556,25 @@ ul, ol { list-style: none; }
   max-width: 640px;
 }
 
+.phone { margin: 0; }
+
+.phone figcaption {
+  margin-top: 0.9rem;
+  max-width: 30ch;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--soft);
+}
+
+.phone figcaption span {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: var(--label-track);
+  color: var(--muted);
+}
+
 /* Two shorter entries side by side */
 .case-duo {
   display: grid;
@@ -802,11 +828,27 @@ ul, ol { list-style: none; }
 
 .about-grid {
   display: grid;
-  grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 5fr) minmax(0, 4fr);
   column-gap: clamp(2rem, 6vw, 7rem);
   row-gap: 3rem;
   align-items: start;
 }
+
+/* Shown in black and white to sit with the rest of the page.
+   The file itself is in colour; hover brings it back. */
+.portrait {
+  margin: 0;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.portrait img {
+  height: auto;
+  filter: grayscale(1) contrast(1.05);
+  transition: filter 0.6s ease;
+}
+
+.portrait:hover img { filter: none; }
 
 .about-lead {
   max-width: 26ch;
@@ -937,12 +979,10 @@ a.copyright:hover { color: var(--text); }
   line-height: var(--title-lh);
 }
 
-/* Dot type needs size to stay readable: short titles run larger
-   than the long opening and closing lines. */
-.case-title h3 { --title-scale: 0.92; }
+.case-title h3 { --title-scale: var(--ts-case); }
 .mini-text h3,
-.svc h3        { --title-scale: 1; }
-.about-lead    { --title-scale: 0.82; }
+.svc h3        { --title-scale: var(--ts-short); }
+.about-lead    { --title-scale: var(--ts-lead); }
 
 /* ================================================
    RESPONSIVE — TABLET
@@ -956,6 +996,8 @@ a.copyright:hover { color: var(--text); }
   }
 
   .case-duo { grid-template-columns: 1fr; }
+
+  .portrait { max-width: 15rem; }
 
   .svc-list { grid-template-columns: 1fr; row-gap: 2.5rem; }
 
@@ -980,7 +1022,7 @@ a.copyright:hover { color: var(--text); }
 
   /* Narrow screens: the big lines flow as one sentence, set a little larger */
   .headline,
-  .contact-line { --title-scale: 0.88; }
+  .contact-line { --title-scale: calc(var(--ts-long) * 1.19); }
   .headline { font-size: calc(2.1rem * var(--title-scale)); }
   .headline br,
   .contact-line br { display: none; }
