@@ -117,16 +117,32 @@ document.querySelectorAll('.m').forEach((cell) => {
     const gap = Math.max(16, width * 0.03);
     // Start fully outside the visible strip, on the side it enters from
     const from0 = dir > 0 ? Math.max(width, oldW + gap) : -(newW + gap + width * 0.25);
-    const draw = (x) => {
+    // Entering from the right, the old name only has to travel its own width to leave.
+    // Entering from the left, it has the whole line to cross, so once it is hit it
+    // keeps going on its own until it is out of frame.
+    let hit = null;   // moment the two names touch (entry from the left)
+    const draw = (x, p) => {
       newEl.style.transform = 'translateX(' + x + 'px)';
-      const pushed = dir > 0 ? Math.min(0, x - (oldW + gap)) : Math.max(0, x + newW + gap);
+      let pushed;
+      if (dir > 0) {
+        pushed = Math.min(0, x - (oldW + gap));
+      } else {
+        const contact = x + newW + gap;
+        if (hit === null && contact > 0) hit = Math.min(p, 0.95);
+        if (hit === null) {
+          pushed = 0;
+        } else {
+          const u = Math.min(1, (p - hit) / (1 - hit));
+          pushed = Math.max(contact, (width + gap) * (1 - Math.pow(1 - u, 3)));
+        }
+      }
       oldEl.style.transform = 'translateX(' + pushed + 'px)';
     };
-    draw(from0);
+    draw(from0, 0);
     const start = performance.now();
     (function frame(now) {
       const p = Math.min(1, (now - start) / duration);
-      draw(from0 * Math.pow(1 - p, 4));   // quick in, soft landing
+      draw(from0 * Math.pow(1 - p, 4), p);   // quick in, soft landing
       if (p < 1) requestAnimationFrame(frame);
     })(start);
   }
