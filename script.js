@@ -32,15 +32,19 @@ document.querySelectorAll('.m').forEach((cell) => {
   });
 });
 
-// Language switch — a short full-screen transition between the language pages.
-// Five bars close over the page while the name of the language scrambles into
-// the new one; the next page opens the same way. Plain links still work without it.
+// Language switch.
+// 1. The control: a block slides to the chosen language and a red frame follows the pointer.
+// 2. The change of page: five bars close under the header while the language name
+//    scrambles into the new one; the next page opens the same way.
+// With "reduce motion" on, the block still slides but the bars become a plain fade.
+// Plain links still work without any of this.
 (function () {
   const NAMES = { en: 'English', fr: 'Français', nl: 'Nederlands' };
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/\\_—·+';
   const root = document.documentElement;
   const here = (root.lang || 'en').slice(0, 2);
   const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const box = document.querySelector('.lang');
 
   const store = {
     get() { try { return sessionStorage.getItem('lang-wipe'); } catch (e) { return null; } },
@@ -48,6 +52,28 @@ document.querySelectorAll('.m').forEach((cell) => {
     clear() { try { sessionStorage.removeItem('lang-wipe'); } catch (e) {} },
   };
 
+  // ---- the control
+  const links = box ? Array.from(box.querySelectorAll('a')) : [];
+  let thumb = null;
+  const place = (index) => {
+    box.style.setProperty('--i', index);
+    links.forEach((link, k) => link.classList.toggle('is-on', k === index));
+  };
+
+  if (box) {
+    thumb = document.createElement('i');
+    thumb.className = 'lang-thumb';
+    const ghost = document.createElement('i');
+    ghost.className = 'lang-ghost';
+    [thumb, ghost].forEach((el) => { el.setAttribute('aria-hidden', 'true'); box.appendChild(el); });
+
+    const current = Math.max(0, links.findIndex((link) => link.getAttribute('aria-current') === 'true'));
+    place(current);
+    box.style.setProperty('--h', current);
+    links.forEach((link, k) => link.addEventListener('mouseenter', () => box.style.setProperty('--h', k)));
+  }
+
+  // ---- the change of page
   function build(stepText, word) {
     const el = document.createElement('div');
     el.className = 'lang-wipe';
@@ -73,32 +99,36 @@ document.querySelectorAll('.m').forEach((cell) => {
     })(start);
   }
 
-  // Leaving: close the bars, scramble to the new language, then go
-  document.querySelectorAll('.lang a').forEach((link) => {
+  // Leaving: slide the block, close the page, then go
+  links.forEach((link, index) => {
     link.addEventListener('click', (event) => {
       const to = link.getAttribute('lang');
-      if (calm || link.getAttribute('aria-current') === 'true' || !NAMES[to]) return;
+      if (link.getAttribute('aria-current') === 'true' || !NAMES[to]) return;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
       event.preventDefault();
-      const wipe = build(here.toUpperCase() + ' → ' + to.toUpperCase(), NAMES[here] || '');
+
+      place(index);
+      thumb.classList.add('is-moving');
+
+      const wipe = build(here.toUpperCase() + ' → ' + to.toUpperCase(), calm ? NAMES[to] : (NAMES[here] || ''));
       const word = wipe.querySelector('.lang-wipe-word');
-      requestAnimationFrame(() => requestAnimationFrame(() => wipe.classList.add('is-closed')));
-      setTimeout(() => scramble(word, NAMES[to], 480), 420);
-      setTimeout(() => { store.set(to); window.location.href = link.href; }, 1050);
+      // The block gets a head start, so the eye sees it move before the page closes
+      setTimeout(() => wipe.classList.add('is-closed'), calm ? 250 : 180);
+      if (!calm) setTimeout(() => scramble(word, NAMES[to], 480), 600);
+      setTimeout(() => { store.set(to); window.location.href = link.href; }, calm ? 800 : 1250);
     });
   });
 
   // Arriving: start closed, then open
-  if (store.get() === here && !calm) {
+  if (store.get() === here) {
     const wipe = build('→ ' + here.toUpperCase(), NAMES[here]);
+    const parts = Array.from(wipe.querySelectorAll('.lang-wipe-bar, .lang-wipe-label'));
+    parts.forEach((part) => { part.style.transition = 'none'; });
     wipe.classList.add('is-closed');
-    wipe.querySelectorAll('.lang-wipe-bar').forEach((bar) => { bar.style.transition = 'none'; });
-    wipe.querySelector('.lang-wipe-label').style.transition = 'none';
     void wipe.offsetWidth;
     root.classList.remove('lang-arriving');
     setTimeout(() => {
-      wipe.querySelectorAll('.lang-wipe-bar').forEach((bar) => { bar.style.transition = ''; });
-      wipe.querySelector('.lang-wipe-label').style.transition = '';
+      parts.forEach((part) => { part.style.transition = ''; });
       wipe.classList.add('is-opening');
       setTimeout(() => wipe.remove(), 900);
     }, 260);
@@ -106,8 +136,10 @@ document.querySelectorAll('.m').forEach((cell) => {
   store.clear();
   root.classList.remove('lang-arriving');
 
-  // Coming back with the browser's back button: never leave the bars closed
+  // Coming back with the browser's back button: never leave the page closed
   window.addEventListener('pageshow', (event) => {
-    if (event.persisted) document.querySelectorAll('.lang-wipe').forEach((el) => el.remove());
+    if (!event.persisted) return;
+    document.querySelectorAll('.lang-wipe').forEach((el) => el.remove());
+    if (box) place(Math.max(0, links.findIndex((link) => link.getAttribute('aria-current') === 'true')));
   });
 })();
