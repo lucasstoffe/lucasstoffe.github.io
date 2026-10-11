@@ -10,6 +10,10 @@
 
   <!-- Link preview (WhatsApp, email, social). Update the two URLs if the address changes. -->
   <link rel="canonical" href="https://lucasstoffe.github.io/">
+  <link rel="alternate" hreflang="en" href="https://lucasstoffe.github.io/">
+  <link rel="alternate" hreflang="fr" href="https://lucasstoffe.github.io/fr/">
+  <link rel="alternate" hreflang="nl" href="https://lucasstoffe.github.io/nl/">
+  <link rel="alternate" hreflang="x-default" href="https://lucasstoffe.github.io/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Lucas Stoffe · Websites, identities and custom tools">
   <meta property="og:description" content="Independent designer and developer in Brussels. Designed and built end to end.">
@@ -25,7 +29,7 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Syne+Mono&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Syne+Mono&display=swap"></noscript>
   <link rel="stylesheet" href="style.css">
-  <script>document.documentElement.classList.add('js');</script>
+  <script>document.documentElement.classList.add('js');try{if(sessionStorage.getItem('lang-wipe'))document.documentElement.classList.add('lang-arriving')}catch(e){}</script>
 </head>
 <body>
 
@@ -49,6 +53,11 @@
       <a href="#services">Services</a>
       <a href="#about">About</a>
       <a class="site-nav-cta" href="#contact">Contact</a>
+      <span class="lang" role="group" aria-label="Language">
+        <a href="./" lang="en" hreflang="en" aria-current="true">EN</a>
+        <a href="fr/" lang="fr" hreflang="fr">FR</a>
+        <a href="nl/" lang="nl" hreflang="nl">NL</a>
+      </span>
     </nav>
   </header>
 
@@ -72,10 +81,10 @@
         <span class="hl-indent">for people who care</span><br>
         <span class="hl-indent-2">how their work is seen.</span>
       </h1>
-      <p class="lede">I'm Lucas, an independent designer and developer in Brussels. I design it and I build it, so nothing gets lost between the idea and what goes live.</p>
+      <p class="lede">I'm Lucas, an independent designer and developer in Brussels. I design and build everything myself, so nothing gets lost between the idea and what goes live.</p>
       <div class="opening-actions">
         <a class="btn btn--solid" href="#contact">Start a project <span aria-hidden="true">→</span></a>
-        <a class="btn" href="#work">See the work <span aria-hidden="true">↓</span></a>
+        <a class="btn" href="#work">See my work <span aria-hidden="true">↓</span></a>
       </div>
     </div>
   </section>
@@ -100,7 +109,7 @@
         </div>
         <div class="case-body">
           <p>Reinout Van der Straeten makes jewellery and furniture by hand, near Ghent. He needed a home for it that felt like the work itself: quiet, considered, a little brutal.</p>
-          <p>I designed and built everything, from the first layout to the checkout. A shop with online payments, gift cards, workshop bookings, made-to-order requests, and a back office the studio runs on its own. Nothing decorative. A site that lets the work breathe.</p>
+          <p>I designed and built everything, from the first layout to the checkout. A shop with online payments, gift cards, workshop bookings, made-to-order requests, and a back office the studio runs on its own. A site that lets the work breathe.</p>
           <dl class="case-meta">
             <div><dt>Client</dt><dd>Jewellery and furniture studio</dd></div>
             <div><dt>Scope</dt><dd>Web design, development, online shop, back office</dd></div>
@@ -126,7 +135,7 @@
         </div>
         <div class="case-body">
           <p>I ran for years without a coach. Borrowed plans, generic schedules, training blocks that never quite fit. When I got a bib for the 20 km of Brussels, I built what was missing.</p>
-          <p>A coach I can talk to. It knows my training, adjusts when a week goes sideways and keeps building toward race day. I use it every day, and it taught me what a small custom tool can do, for one runner or for one business.</p>
+          <p>A coach I can talk to. It knows my training, adjusts when a week goes sideways and keeps building toward race day. I use it every day, and it taught me what a small custom tool can do for one runner, and maybe one day for more.</p>
           <dl class="case-meta">
             <div><dt>Type</dt><dd>Self-initiated tool</dd></div>
             <div><dt>Scope</dt><dd>Concept, design, build</dd></div>
