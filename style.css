@@ -1147,6 +1147,24 @@ html.lang-arriving body::before {
   white-space: nowrap;
 }
 
+/* Calm version: one name pushes the other out. Clipped left and right only,
+   so accents and tails above and below the line stay whole. */
+.lang-wipe-word.is-push {
+  position: relative;
+  clip-path: inset(-0.4em 0);
+}
+
+.lang-wipe-word.is-push span {
+  display: inline-block;
+  will-change: transform;
+}
+
+.lang-wipe-word.is-push .lang-wipe-in {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
 /* ================================================
    RESPONSIVE — TABLET
 ================================================ */
@@ -1248,6 +1266,8 @@ html.lang-arriving body::before {
   .lang-wipe-bar,
   .lang-wipe.is-opening .lang-wipe-bar { opacity: 0; }
   .lang-wipe.is-closed:not(.is-opening) .lang-wipe-bar { opacity: 1; }
+
+  .lang-wipe-label { transition: opacity 0.25s ease; }
 
   .lang-thumb { transition: translate 0.35s ease; }
   .lang-thumb.is-moving { animation: none; }

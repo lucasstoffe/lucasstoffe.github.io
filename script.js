@@ -99,6 +99,38 @@ document.querySelectorAll('.m').forEach((cell) => {
     })(start);
   }
 
+  // Calm version: the new name comes in from the side the block moved to and
+  // pushes the old name out. They touch and travel together, like one shoving the other.
+  function push(node, from, to, dir, duration) {
+    const oldEl = document.createElement('span');
+    const newEl = document.createElement('span');
+    oldEl.textContent = from;
+    newEl.textContent = to;
+    newEl.className = 'lang-wipe-in';
+    node.textContent = '';
+    node.append(oldEl, newEl);
+    node.classList.add('is-push');
+
+    const width = node.clientWidth;
+    const oldW = oldEl.offsetWidth;
+    const newW = newEl.offsetWidth;
+    const gap = Math.max(16, width * 0.03);
+    // Start fully outside the visible strip, on the side it enters from
+    const from0 = dir > 0 ? Math.max(width, oldW + gap) : -(newW + gap + width * 0.25);
+    const draw = (x) => {
+      newEl.style.transform = 'translateX(' + x + 'px)';
+      const pushed = dir > 0 ? Math.min(0, x - (oldW + gap)) : Math.max(0, x + newW + gap);
+      oldEl.style.transform = 'translateX(' + pushed + 'px)';
+    };
+    draw(from0);
+    const start = performance.now();
+    (function frame(now) {
+      const p = Math.min(1, (now - start) / duration);
+      draw(from0 * Math.pow(1 - p, 4));   // quick in, soft landing
+      if (p < 1) requestAnimationFrame(frame);
+    })(start);
+  }
+
   // Leaving: slide the block, close the page, then go
   links.forEach((link, index) => {
     link.addEventListener('click', (event) => {
@@ -107,15 +139,17 @@ document.querySelectorAll('.m').forEach((cell) => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
       event.preventDefault();
 
+      const fromIndex = links.findIndex((l) => l.getAttribute('aria-current') === 'true');
       place(index);
       thumb.classList.add('is-moving');
 
-      const wipe = build(here.toUpperCase() + ' → ' + to.toUpperCase(), calm ? NAMES[to] : (NAMES[here] || ''));
+      const wipe = build(here.toUpperCase() + ' → ' + to.toUpperCase(), NAMES[here] || '');
       const word = wipe.querySelector('.lang-wipe-word');
       // The block gets a head start, so the eye sees it move before the page closes
-      setTimeout(() => wipe.classList.add('is-closed'), calm ? 250 : 180);
-      if (!calm) setTimeout(() => scramble(word, NAMES[to], 480), 600);
-      setTimeout(() => { store.set(to); window.location.href = link.href; }, calm ? 800 : 1250);
+      setTimeout(() => wipe.classList.add('is-closed'), calm ? 150 : 180);
+      if (calm) setTimeout(() => push(word, NAMES[here] || '', NAMES[to], index > fromIndex ? 1 : -1, 420), 420);
+      else setTimeout(() => scramble(word, NAMES[to], 480), 600);
+      setTimeout(() => { store.set(to); window.location.href = link.href; }, calm ? 920 : 1250);
     });
   });
 
