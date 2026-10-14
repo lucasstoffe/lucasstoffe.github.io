@@ -1,17 +1,59 @@
-// Scroll reveal
+// Scroll reveal.
+// Things appear a little after they enter the screen, so you see them arrive.
+// Whatever comes into view at the same moment appears one after another,
+// top to bottom and left to right (--i sets the small delay in style.css).
 const observer = new IntersectionObserver(
   (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
-      }
-    });
+    entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((a, b) => (a.boundingClientRect.top - b.boundingClientRect.top) || (a.boundingClientRect.left - b.boundingClientRect.left))
+      .forEach((entry, k) => {
+        const el = entry.target;
+        el.style.setProperty('--i', Math.min(k, 6));
+        el.classList.add('is-visible');
+        observer.unobserve(el);
+        // Once it has landed, drop the blur so the text is fully crisp
+        setTimeout(() => el.classList.add('is-done'), 1700 + Math.min(k, 6) * 120);
+      });
   },
-  { threshold: 0.08, rootMargin: '0px 0px -6% 0px' }
+  { threshold: 0, rootMargin: '0px 0px -12% 0px' }
 );
 
+// Moodboard: each image appears on its own as you scroll down, instead of the whole grid at once
+document.querySelectorAll('.moodboard-grid').forEach((grid) => {
+  grid.classList.remove('reveal');
+  grid.querySelectorAll('.m').forEach((cell) => cell.classList.add('reveal'));
+});
+
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+// Screen recordings: only play while on screen (saves battery).
+// With "reduce motion" on they don't start by themselves: a play button is shown instead.
+document.querySelectorAll('.shot--video video').forEach((video) => {
+  const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (calm) {
+    video.removeAttribute('autoplay');
+    video.pause();
+    video.controls = true;
+    return;
+  }
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) video.play().catch(() => {});
+    else video.pause();
+  }, { threshold: 0.2 }).observe(video);
+});
+
+// Moodboard glitch: a brief distortion on mouse enter, only on these images.
+// To change which ones glitch, edit the file names in this list.
+const GLITCH = ['14.jpg', '18.jpg', 'fw2.jpg', '07.jpg', '08.jpg'];
+document.querySelectorAll('.m').forEach((cell) => {
+  const img = cell.querySelector('img');
+  if (!img || !GLITCH.some((name) => img.getAttribute('src').endsWith('/' + name))) return;
+  cell.addEventListener('mouseenter', () => {
+    cell.classList.add('glitch-active');
+    setTimeout(() => cell.classList.remove('glitch-active'), 250);
+  });
+});
 
 // Header gets a hairline once the page has moved
 const head = document.querySelector('.site-head');
@@ -22,14 +64,6 @@ onScroll();
 // Hide broken image icons — placeholder cells stay clean
 document.querySelectorAll('img').forEach((img) => {
   img.addEventListener('error', () => { img.style.opacity = '0'; });
-});
-
-// Moodboard hover glitch — brief distortion on mouse enter
-document.querySelectorAll('.m').forEach((cell) => {
-  cell.addEventListener('mouseenter', () => {
-    cell.classList.add('glitch-active');
-    setTimeout(() => cell.classList.remove('glitch-active'), 250);
-  });
 });
 
 // Language switch.
@@ -43,7 +77,8 @@ document.querySelectorAll('.m').forEach((cell) => {
   const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ/\\_—·+';
   const root = document.documentElement;
   const here = (root.lang || 'en').slice(0, 2);
-  const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Read at the moment of the click, so switching the Mac setting works without a reload
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const box = document.querySelector('.lang');
 
   const store = {
@@ -154,6 +189,7 @@ document.querySelectorAll('.m').forEach((cell) => {
       if (link.getAttribute('aria-current') === 'true' || !NAMES[to]) return;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
       event.preventDefault();
+      const calm = reduceMotion.matches;
 
       const fromIndex = links.findIndex((l) => l.getAttribute('aria-current') === 'true');
       place(index);

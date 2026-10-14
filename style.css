@@ -44,6 +44,16 @@
   --ts-short: 0.92;   /* small project titles, services */
   --ts-lead:  0.8;    /* About lead */
   --title-scale: var(--ts-long);
+
+  /* Motion. One place to tune how the whole page feels. */
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);     /* things entering, hovers that move */
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);    /* things moving across the screen */
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);     /* long, soft landing for scroll reveals */
+  --dur-press:   160ms;   /* button press */
+  --dur-fast:    250ms;   /* colour changes on hover */
+  --dur-base:    400ms;   /* small hover moves (arrows) */
+  --dur-reveal:  1300ms;  /* sections appearing on scroll */
+  --stagger:     120ms;   /* gap between items appearing together */
 }
 
 /* ================================================
@@ -99,11 +109,13 @@ ul, ol { list-style: none; }
    GRAIN
 ================================================ */
 
+/* Only slightly larger than the screen: enough room for the jitter below,
+   without a giant layer the browser has to repaint every step. */
 .grain {
   position: fixed;
-  inset: -100%;
-  width: 300%;
-  height: 300%;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
   z-index: 998;
   pointer-events: none;
   opacity: 0.045;
@@ -188,10 +200,15 @@ ul, ol { list-style: none; }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text);
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  transition:
+    background var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    transform var(--dur-press) var(--ease-out);
 }
 
-.btn:hover { border-color: var(--text); }
+/* Pressed: the button gives a little, so it feels like it heard you */
+.btn:active { transform: scale(0.97); }
 
 .btn--solid {
   background: var(--text);
@@ -199,10 +216,24 @@ ul, ol { list-style: none; }
   color: var(--bg);
 }
 
-.btn--solid:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--text);
+/* The arrow leans toward where the button goes */
+.btn span[aria-hidden] {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+/* Hover effects only for a real mouse. On phones a tap would leave them stuck on. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { border-color: var(--text); }
+
+  .btn--solid:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+
+  .btn[href="#contact"]:hover span[aria-hidden] { transform: translateX(3px); }
+  .btn[href="#work"]:hover span[aria-hidden]    { transform: translateY(2px); }
 }
 
 .link-out {
@@ -213,10 +244,18 @@ ul, ol { list-style: none; }
   color: var(--text);
   padding-bottom: 0.3em;
   border-bottom: 1px solid var(--faint);
-  transition: border-color 0.25s ease, color 0.25s ease;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
 
-.link-out:hover { border-color: var(--accent); color: var(--accent); }
+.link-out span[aria-hidden] {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link-out:hover { border-color: var(--accent); color: var(--accent); }
+  .link-out:hover span[aria-hidden] { transform: translate(2px, -2px); }
+}
 
 /* ================================================
    REVEAL
@@ -224,16 +263,40 @@ ul, ol { list-style: none; }
    page still shows everything without it.
 ================================================ */
 
+/* Text rises slowly out of a soft blur, as if coming into focus.
+   --i is set by script.js: items that appear together come in one after another. */
 .js .reveal {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.9s ease, transform 0.9s ease;
+  transform: translateY(28px);
+  filter: blur(6px);
+  transition:
+    opacity var(--dur-reveal) var(--ease-reveal),
+    transform var(--dur-reveal) var(--ease-reveal),
+    filter var(--dur-reveal) var(--ease-reveal);
+  transition-delay: calc(var(--i, 0) * var(--stagger));
+}
+
+/* Pictures: a longer, softer rise with no blur (blur on big images is heavy in Safari) */
+.js .shot.reveal,
+.js .phones.reveal,
+.js .portrait.reveal,
+.js .m.reveal {
+  transform: translateY(40px);
+  filter: none;
+  transition:
+    opacity 1600ms var(--ease-reveal),
+    transform 1600ms var(--ease-reveal);
+  transition-delay: calc(var(--i, 0) * var(--stagger));
 }
 
 .js .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
+  filter: blur(0);
 }
+
+/* The blur is only for the way in. Once visible, drop it so text stays crisp. */
+.js .reveal.is-done { filter: none; }
 
 /* ================================================
    HEADER
@@ -286,10 +349,12 @@ ul, ol { list-style: none; }
 
 .site-nav a {
   color: var(--soft);
-  transition: color 0.25s ease;
+  transition: color var(--dur-fast) ease;
 }
 
-.site-nav a:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  .site-nav a:hover { color: var(--text); }
+}
 
 /* Language switch: each language is its own page.
    A block slides to the chosen language (script.js adds it); a red frame
@@ -314,7 +379,9 @@ ul, ol { list-style: none; }
   transition: color 0.3s ease;
 }
 
-.site-nav .lang a:hover { color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  .site-nav .lang a:hover { color: var(--text); }
+}
 
 html:not(.js) .site-nav .lang a[aria-current="true"],
 .site-nav .lang a.is-on { color: var(--bg); }
@@ -357,7 +424,9 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   transition: translate 0.35s cubic-bezier(0.3, 1.3, 0.5, 1), opacity 0.2s ease;
 }
 
-.lang:hover .lang-ghost { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .lang:hover .lang-ghost { opacity: 1; }
+}
 
 .site-nav .site-nav-cta {
   color: var(--text);
@@ -414,7 +483,7 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   position: relative;
   z-index: 1;
   opacity: 0;
-  animation: fade-in 0.8s ease 0.1s forwards;
+  animation: fade-in 500ms var(--ease-out) 100ms forwards;
 }
 
 /* Wrapper: positions the whole composition, carries mix-blend-mode.
@@ -480,9 +549,17 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   align-items: flex-start;
   position: relative;
   z-index: 1;
-  opacity: 0;
-  animation: slide-up 0.9s ease 0.25s forwards;
 }
+
+/* Headline, intro and buttons arrive one after another */
+.opening-bottom > * {
+  opacity: 0;
+  animation: slide-up 650ms var(--ease-out) forwards;
+}
+
+.opening-bottom > :nth-child(1) { animation-delay: 180ms; }
+.opening-bottom > :nth-child(2) { animation-delay: 260ms; }
+.opening-bottom > :nth-child(3) { animation-delay: 340ms; }
 
 .headline {
   font-size: calc(clamp(2rem, 4.4vw, 4.6rem) * var(--title-scale));
@@ -661,8 +738,16 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   align-items: start;
 }
 
-.mini .shot + .shot,
-.mini .shot-pair { margin-top: clamp(0.5rem, 1.2vw, 1rem); }
+/* Only stacked pictures get space above them. Pictures side by side in a pair
+   must not, or the second one sits lower than the first. */
+.mini > .shot + .shot,
+.mini > .shot-pair { margin-top: clamp(0.5rem, 1.2vw, 1rem); }
+
+/* An entry that follows the two shorter ones gets the same divider line */
+.case-duo + .case {
+  padding-top: var(--section);
+  border-top: 1px solid var(--border);
+}
 
 .mini-text { margin-top: 2rem; }
 
@@ -693,6 +778,17 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
 
 .shot-pair .shot { aspect-ratio: 4 / 3; }
 .shot-pair .shot img { height: 100%; object-fit: cover; }
+
+/* Screen recording: plays on its own, silent, on a loop */
+.shot--video video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Two full screenshots side by side, shown whole (no crop) */
+.shot-pair--screens .shot { aspect-ratio: auto; }
+.shot-pair--screens .shot img { height: auto; }
 
 .shot--logo { background: #fff; }
 .shot-pair .shot--logo img { object-fit: contain; padding: 9%; }
@@ -816,7 +912,6 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   overflow: hidden;
   background: var(--surface);
   position: relative;
-  cursor: pointer;
   width: 100%;
 }
 
@@ -860,13 +955,14 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   height: 100%;
   object-fit: cover;
   transition: transform 0.7s ease;
-  will-change: transform;
 }
 
-.m:hover img {
-  transform: scale(1.04);
+/* Slow zoom on hover */
+@media (hover: hover) and (pointer: fine) {
+  .m:hover img { transform: scale(1.04); }
 }
 
+/* Glitch: only on a few chosen images (the list is in script.js) */
 .m.glitch-active img {
   animation: img-glitch 0.22s steps(3) 1 forwards;
 }
@@ -878,6 +974,14 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   66%  { filter: hue-rotate(-45deg) contrast(0.92);
          transform: scale(1.04) translate(3px, 1px); }
   100% { filter: none; transform: scale(1.04) translate(0, 0); }
+}
+
+/* Same colour flicker, without the shake (used with reduced motion) */
+@keyframes img-glitch-calm {
+  0%   { filter: none; }
+  33%  { filter: hue-rotate(70deg) contrast(1.2) saturate(1.3); }
+  66%  { filter: hue-rotate(-45deg) contrast(0.92); }
+  100% { filter: none; }
 }
 
 .m::after {
@@ -922,7 +1026,9 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   transition: filter 0.6s ease;
 }
 
-.portrait:hover img { filter: none; }
+@media (hover: hover) and (pointer: fine) {
+  .portrait:hover img { filter: none; }
+}
 
 .about-lead {
   max-width: 26ch;
@@ -1000,21 +1106,28 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   line-height: 1.1;
   padding-bottom: 0.2em;
   border-bottom: 1px solid var(--accent);
-  transition: color 0.25s ease;
+  transition: color var(--dur-fast) ease;
   overflow-wrap: anywhere;
 }
-
-.contact-email:hover { color: var(--accent); }
 
 .contact-ig {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--soft);
   letter-spacing: 0.08em;
-  transition: color 0.25s ease;
+  transition: color var(--dur-fast) ease;
 }
 
-.contact-ig:hover { color: var(--text); }
+.contact-ig span[aria-hidden] {
+  display: inline-block;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-email:hover { color: var(--accent); }
+  .contact-ig:hover { color: var(--text); }
+  .contact-ig:hover span[aria-hidden] { transform: translate(2px, -2px); }
+}
 
 .site-foot {
   display: flex;
@@ -1032,7 +1145,11 @@ html:not(.js) .lang a[aria-current="true"] { background: var(--text); }
   letter-spacing: 0.18em;
 }
 
-a.copyright:hover { color: var(--text); }
+a.copyright { transition: color var(--dur-fast) ease; }
+
+@media (hover: hover) and (pointer: fine) {
+  a.copyright:hover { color: var(--text); }
+}
 
 /* ================================================
    TITLES
@@ -1273,14 +1390,28 @@ html.lang-arriving body::before {
   .lang-thumb.is-moving { animation: none; }
   .lang-ghost { transition: opacity 0.2s ease; }
 
+  /* Scroll reveals: still slow and soft, but only a fade. Nothing moves or blurs. */
   .js .reveal,
-  .opening-status,
-  .opening-bottom {
-    opacity: 1;
+  .js .shot.reveal,
+  .js .phones.reveal,
+  .js .portrait.reveal,
+  .js .m.reveal {
     transform: none;
-    animation: none;
-    transition: none;
+    filter: none;
+    transition: opacity 1200ms ease;
+    transition-delay: calc(var(--i, 0) * var(--stagger));
   }
 
+  .opening-bottom > *,
+  .opening-status { animation: fade-in 600ms ease forwards; }
+
   .opening-tattoo { opacity: 0.75; animation: none; }
+
+  /* Glitch keeps its colour flicker, without the shake */
+  .m.glitch-active img { animation-name: img-glitch-calm; }
+
+  .btn:active { transform: none; }
+  .btn span[aria-hidden],
+  .link-out span[aria-hidden],
+  .contact-ig span[aria-hidden] { transform: none !important; }
 }
